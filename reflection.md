@@ -12,11 +12,15 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 
 Document at least 3 bugs you found. Add rows as needed.
 
-| Input | Expected Behavior | Actual Behavior | Console Output / Error |
-|-------|-------------------|-----------------|------------------------|
-| | | | |
-| | | | |
-| | | | |
+| Input Used | Expected Behavior | Actual Behavior | Console Error / Output |
+|------------|-------------------|-----------------|------------------------|
+| Guess of 60 (secret number is 40) | "Go LOWER" hint displayed | "Go HIGHER" hint shown — hint direction is backwards | none |
+| Starting a new game on Easy difficulty (range 1–20) | Hint shows "Guess a number between 1 and 20" | Hint always shows "Guess a number between 1 and 100" regardless of difficulty | none |
+| Playing 7 rounds on Normal difficulty without winning | Game should allow up to 8 attempts before ending | Game ends after only 7 attempts — attempts counter starts at 1 instead of 0 | none |
+| Entering the correct number after a previous win, then clicking New Game and guessing correctly | Fresh game starts, correct guess shows win screen | "You already won" message appears immediately — status never resets on New Game | none |
+| Entering the correct answer on the 2nd, 4th, or 6th attempt | "You guessed it!" and win screen | Guess never registers as correct on even-numbered attempts — secret is converted to a string so integer comparison always fails | none |
+| Guessing too high on the 2nd attempt (even attempt) | Score stays the same or decreases | Score increases by +5 — wrong guesses should never award points | none |
+| Selecting Hard difficulty | Harder game with a wider range than Normal (1–100) | Hard uses range 1–50, which is actually easier than Normal — difficulty levels are misconfigured | none |
 
 ---
 

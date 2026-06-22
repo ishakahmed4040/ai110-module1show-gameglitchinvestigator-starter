@@ -7,7 +7,8 @@ def get_range_for_difficulty(difficulty: str):
     if difficulty == "Normal":
         return 1, 100
     if difficulty == "Hard":
-        return 1, 50
+        # FIX: AI identified Hard range (1-50) was narrower than Normal (1-100). I confirmed it made the game easier, and we changed it to 1-500 to properly scale difficulty.
+        return 1, 500
     return 1, 100
 
 
@@ -34,10 +35,11 @@ def check_guess(guess, secret):
         return "Win", "🎉 Correct!"
 
     try:
+        # FIX: I noticed hints felt wrong during testing. AI confirmed the messages were swapped — "Go HIGHER" and "Go LOWER" were reversed. We corrected them to match the actual comparison.
         if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
+            return "Too High", "📉 Go LOWER!"
         else:
-            return "Too Low", "📉 Go LOWER!"
+            return "Too Low", "📈 Go HIGHER!"
     except TypeError:
         g = str(guess)
         if g == secret:
@@ -55,8 +57,7 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
         return current_score + points
 
     if outcome == "Too High":
-        if attempt_number % 2 == 0:
-            return current_score + 5
+        # FIX: AI spotted that even-numbered attempts awarded +5 points for wrong guesses. I verified it in the Debug panel and we removed the branch so wrong guesses always deduct points.
         return current_score - 5
 
     if outcome == "Too Low":
@@ -93,7 +94,8 @@ if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    # FIX: I noticed the game ended one attempt too early. AI explained the counter started at 1 instead of 0, consuming one attempt before the player even guessed. We changed it to 0.
+    st.session_state.attempts = 0
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -106,8 +108,9 @@ if "history" not in st.session_state:
 
 st.subheader("Make a guess")
 
+# FIX: I saw the hint always said "1 and 100" even on Easy mode. AI identified the range was hardcoded as a string literal. We replaced it with the `low` and `high` variables to reflect the selected difficulty.
 st.info(
-    f"Guess a number between 1 and 100. "
+    f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
@@ -133,7 +136,11 @@ with col3:
 
 if new_game:
     st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    st.session_state.secret = random.randint(low, high)
+    # FIX: I kept seeing "You already won" right after starting a new game. AI traced it to status, score, and history never being reset. We added the three missing resets so the game starts clean.
+    st.session_state.status = "playing"
+    st.session_state.score = 0
+    st.session_state.history = []
     st.success("New game started.")
     st.rerun()
 
@@ -155,10 +162,8 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
-        if st.session_state.attempts % 2 == 0:
-            secret = str(st.session_state.secret)
-        else:
-            secret = st.session_state.secret
+        # FIX: I noticed correct guesses sometimes didn't register as wins. AI identified the secret was being cast to a string on even attempts, so an integer guess could never match it. We removed the conversion so the secret is always an integer.
+        secret = st.session_state.secret
 
         outcome, message = check_guess(guess_int, secret)
 
